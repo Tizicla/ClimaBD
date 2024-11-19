@@ -1,185 +1,46 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="style.css">
-  <title>Datos de Temperatura y Humedad</title>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLIMA</title>
+    <script type="module" src="config.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script type="module" src="script.js"></script>
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <div class="logo">
-                <img src="logo.png" alt="AppClimaLogo" />
-            </div>
-            <div class="search-bar">
-                <input type="text" placeholder="Buscar ciudad o código postal" />
-                <button type="submit"><i class="fa fa-search"></i></button>
-            </div>
-            <div class="icons">
-                <i class="fa fa-globe"></i> MX |
-                <span class="unit">°C <i class="fa fa-caret-down"></i></span>
-                <i class="fa fa-bars"></i>
-              </div>
-            </div>
-          <h1>Datos de Temperatura y Humedad</h1>
-          <nav>
-            <a href="#currentData">Inicio</a>
-            <a href="#myChart">Gráfica</a>
-            <a href="#downloadBtn">Descargar Datos</a>
-          </nav>
-        </div>
-      </header>
-    <main>
-        <div id="currentData">
-            <p>Temperatura Actual: <span id="tempActual"></span>°C</p>
-            <p>Humedad Actual: <span id="humActual"></span>%</p>
-            <p>Fecha y Hora: <span id="currentDateTime"></span></p>
-        </div>
-  
-  <!-- Gráfico de temperatura y humedad -->
-        <canvas id="myChart" style="width: 600px; height: 400px; background-color: #f3f3f3;"></canvas>
-  
-  <!-- Botones para descargar CSV y PDF -->
-        <button id="downloadCSVBtn">Descargar Datos en CSV</button>
-        <button id="downloadPDFBtn">Descargar PDF</button>
-    </main>
+    <div>
+        foco1:
+        <input type="checkbox" onpress="" name="foco1" id="foco1input">
+        foco2:
+        <input type="checkbox" name="foco2" id="foco2input">
+    </div>
 
-    <footer>
-        <p>&copy; 2024 Sistema de Monitoreo de Clima</p>
-    </footer>
-  <script>
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyBFIhz4mRKibRgzy4Om4W20liXeCUt-r74",
-      authDomain: "sensorth-c671d.firebaseapp.com",
-      databaseURL: "https://sensorth-c671d-default-rtdb.firebaseio.com",
-      projectId: "sensorth-c671d",
-      storageBucket: "sensorth-c671d.firebasestorage.app",
-      messagingSenderId: "622485340485",
-      appId: "1:622485340485:web:ab540b4d37129c9e3cfe2c"
-  };
+    <div>
+        temp actual:
+        <span id="tempCurrent"></span>
+        humedad actual:
+        <span id="humCurrent"></span>
+        hora: 
+        <span id="timeCurrent"></span>
+    </div>
 
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    <div>
+        <label for="graphnum">Number of Points:</label>
+        <input type="number" id="graphnum" value="0">
+        <button id="updateButton" >Update Graph</button>
+    </div>
+    <svg width="800" height="400" id="scatterPlot"></svg>
 
-    // Fecha y hora actual
-    function updateDateTime() {
-      document.getElementById('currentDateTime').textContent = new Date().toLocaleString();
-    }
-    setInterval(updateDateTime, 1000);
 
-// Mostrar datos actuales de temperatura y humedad en tiempo real
-function displayCurrentData() {
-  const currentDataRef = database.ref('sensores').limitToLast(1);
-  currentDataRef.on('value', snapshot => {
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      const lastEntry = Object.values(data)[0]; 
-      
-      if (lastEntry) {
-        document.getElementById('tempActual').textContent = lastEntry.temperatura || 'N/A';
-        document.getElementById('humActual').textContent = lastEntry.humedad || 'N/A';
-      }
-    } else {
-      console.error("No hay datos disponibles en la base de datos.");
-    }
-  }, error => {
-    console.error("Error al obtener los datos:", error);
-  });
-}
-    // Graficar los últimos 288 valores
-    function plotData() {
-      const chartRef = database.ref('sensores').limitToLast(288);
-      chartRef.once('value', snapshot => {
-        const data = snapshot.val();
-        const labels = [];
-        const tempData = [];
-        const humData = [];
 
-        Object.values(data).forEach(entry => {
-          labels.push(entry.fecha_hora);
-          tempData.push(entry.temperatura);
-          humData.push(entry.humedad);
-        });
-
-        const ctx = document.getElementById('myChart').getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              { label: 'Temperatura (°C)', data: tempData, borderColor: 'rgba(255, 99, 132, 1)', fill: false },
-              { label: 'Humedad (%)', data: humData, borderColor: 'rgba(54, 162, 235, 1)', fill: false }
-            ]
-          }
-        });
-      });
-    }
-    plotData();
-
-    // Descargar los datos en CSV y eliminarlos
-    document.getElementById('downloadCSVBtn').addEventListener('click', () => {
-      database.ref('sensores').limitToLast(288).once('value').then(snapshot => {
-        const data = snapshot.val();
-        let csvContent = "data:text/csv;charset=utf-8,Fecha,Temperatura,Humedad\n";
-
-        Object.values(data).forEach(entry => {
-          csvContent += `${entry.fecha_hora},${entry.temperatura},${entry.humedad}\n`;
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "datos.csv");
-        document.body.appendChild(link);
-        link.click();
-
-        // Eliminar los datos de Firebase
-        snapshot.forEach(childSnapshot => {
-          childSnapshot.ref.remove();
-        });
-      });
-    });
-
-    // Descargar el gráfico y datos como PDF
-    document.getElementById("downloadPDFBtn").addEventListener("click", () => {
-      const { jsPDF } = window.jspdf;
-      const pdf = new jsPDF('p', 'pt', 'a4');
-      
-      // Título del PDF
-      pdf.setFontSize(20);
-      pdf.text("Reporte de Temperatura y Humedad", 20, 40);
-
-      // Capturar el gráfico y otros elementos de la página
-      html2canvas(document.getElementById("myChart")).then(canvas => {
-        const imgData = canvas.toDataURL("image/png");
-
-        // Agregar gráfico al PDF
-        pdf.addImage(imgData, 'PNG', 20, 60, 560, 300);
-
-        // Agregar tabla de datos (ejemplo de las últimas 24 horas)
-        pdf.setFontSize(14);
-        pdf.text("Últimos 288 valores (24 horas):", 20, 380);
-
-        database.ref('sensores').limitToLast(288).once('value').then(snapshot => {
-          const data = snapshot.val();
-          let y = 400; // Posición vertical inicial
-          
-          Object.values(data).forEach(entry => {
-            pdf.text(`${entry.fecha_hora} - Temp: ${entry.temperatura}°C, Humedad: ${entry.humedad}%`, 20, y);
-            y += 20;
-          });
-
-          // Descargar el PDF
-          pdf.save("Reporte_Temperatura_Humedad.pdf");
-        });
-      });
-    });
-  </script>
+    <div>
+        <button id="printButton">imprimir</button>
+        <button id="csvButton">descargar csv</button>
+    </div>
+    
 </body>
+
 </html>
+
+<style>
