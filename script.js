@@ -115,7 +115,7 @@ hist.then(data => {
         .style("visibility", "hidden")
         .style("background", "#fff")
         .style("border", "1px solid #ccc")
-        .style("padding", "8px")
+        .style("padding", "20px")
         .style("border-radius", "4px")
         .style("font-family", "Helvetica");
 
@@ -300,3 +300,61 @@ csvButton.addEventListener('click', () => {
 
 // console.log(hist);
 // console.log(sensor)
+
+
+// Create the bar graph for temperature
+const tempGraph = d3.select("#tempGraph");
+const humGraph = d3.select("#humGraph");
+
+// Set the dimensions of the bar graphs
+const graphWidth = 300;
+const graphHeight = 40;
+
+const tempBar = tempGraph.append("rect")
+    .attr("width", 0) // Initial width is 0
+    .attr("height", graphHeight)
+    .attr("fill", "orange");
+
+const humBar = humGraph.append("rect")
+    .attr("width", 0) // Initial width is 0
+    .attr("height", graphHeight)
+    .attr("fill", "steelblue");
+
+// Function to update the bar graph for temperature
+function updateTempGraph(tempValue) {
+    const tempPercentage = Math.min(Math.max(tempValue, 0), 100); // Ensure it's between 0 and 100
+
+    tempBar.transition()
+        .duration(500)
+        .attr("width", (tempPercentage / 100) * graphWidth); // Update the width of the bar
+}
+
+// Function to update the bar graph for humidity
+function updateHumGraph(humValue) {
+    const humPercentage = Math.min(Math.max(humValue, 0), 100); // Ensure it's between 0 and 100
+
+    humBar.transition()
+        .duration(500)
+        .attr("width", (humPercentage / 100) * graphWidth); // Update the width of the bar
+}
+
+// Listen for updates from the sensor and update the graphs accordingly
+sensor.then((data) => {
+    const temperatura = data.temperatura;
+    const humedad = data.humedad;
+
+    // Update the bar graphs with the current temperature and humidity
+    updateTempGraph(temperatura);
+    updateHumGraph(humedad);
+}).catch((error) => {
+    console.error("Error fetching sensor data:", error);
+});
+
+// Listen for live updates and reflect the changes in the bar graphs
+listenForValueUpdates('sensor', (data) => {
+    const { temperatura, humedad } = data;
+    
+    // Update the bar graphs with the new temperature and humidity
+    updateTempGraph(temperatura);
+    updateHumGraph(humedad);
+});
