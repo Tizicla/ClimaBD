@@ -234,6 +234,7 @@ hist.then(data => {
 
     const updateGraph = () => {
         const graphnum = +document.getElementById("graphnum").value;
+        localStorage.setItem('graphnum', graphnum);
 
         // Filter valid data points
         const filteredHist = hist.filter(d => d && d.timestamp && d.humedad != null && d.temperatura != null);
@@ -301,7 +302,7 @@ csvButton.addEventListener('click', () => {
 // console.log(hist);
 // console.log(sensor)
 
-
+//GRAPH for TEMP and HUM --------------------------------------------------------------
 // Create the bar graph for temperature
 const tempGraph = d3.select("#tempGraph");
 const humGraph = d3.select("#humGraph");
@@ -357,4 +358,8 @@ listenForValueUpdates('sensor', (data) => {
     // Update the bar graphs with the new temperature and humidity
     updateTempGraph(temperatura);
     updateHumGraph(humedad);
+});
+
+document.addEventListener("DOMContentLoaded", (event) => {
+    localStorage.setItem('graphnum', 0);
 });
