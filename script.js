@@ -1,8 +1,6 @@
-import { readData, readsensor, readhist,  readfocos} from './config.js';
+import {db, readData, readsensor, readhist,  readfocos} from './config.js';
 import {turnOn, turnOff} from './config.js';
-import { onValue, ref } from 'https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js';
-import { onChildAdded, onChildChanged, onChildRemoved } from 'https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js';
-
+import { listenForValueUpdates } from './config.js';
 //console.log
 // readData();
 
@@ -22,6 +20,20 @@ const printButton = document.getElementById('printButton');
 const csvButton = document.getElementById('csvButton');
 
 
+//TIMESTAMP -----------------------------------------------------------------------------
+function updateDateTime() {
+    const date = new Date();
+    const dateTimeString = date.toLocaleString();  // Formats the date and time to a readable string
+    document.getElementById('currentDateTime').textContent = `Current Date and Time: ${dateTimeString}`.toLocaleUpperCase();
+}
+
+// Call the function to update the time immediately when the page loads
+updateDateTime();
+
+// Optional: Update the time every second (if you want real-time updates)
+setInterval(updateDateTime, 1000);
+
+
 //READ THE VALUES OF SENSOR AND UPDATE THEM TO THE SITE  --------------------------------------
 sensor.then((data) => {
     // Extracting the data from the resolved object
@@ -38,6 +50,14 @@ sensor.then((data) => {
     tempSite.textContent = 'N/A °C';
     humSite.textContent = 'N/A %';
     timeSite.textContent = 'N/A';
+});
+
+// Update the HTML for sensor data
+listenForValueUpdates('sensor', (data) => {
+    const { temperatura, humedad, timestamp } = data;
+    tempSite.textContent = `${temperatura} °C`;
+    humSite.textContent = `${humedad} %`;
+    timeSite.textContent = new Date(timestamp).toLocaleString(); // Format timestamp
 });
 
 //READ THE VALUES OF FOCOS AND UPDATE THE CHECKBOXES --------------------------------------
@@ -244,60 +264,39 @@ hist.then(data => {
     console.error("Error loading historical data:", error);
 });
 
-//UPDATE BOTH SENSOR AND HIST VAR ----------------------------------------------------------
-// Set up a real-time listener for the 'sensor' child
-const sensorRef = ref(db, 'sensor');
-onValue(sensorRef, (snapshot) => {
-    if (snapshot.exists()) {
-        const data = snapshot.val();
+//CSV Button --------------------------------------------------------------------
+csvButton.addEventListener('click', () => {
+    hist.then(data => {
+        const histData = data.historico;
+        
+        if (histData.length === 0) {
+            alert("No historical data available to download.");
+            return;
+        }
 
-        // Update your variables
-        const temperatura = data.temperatura;
-        const humedad = data.humedad;
-        const timestamp = new Date(data.timestamp).toLocaleString(); // Format the timestamp
+        const headers = ["Timestamp", "Humedad", "Temperatura"];
+        const rows = histData.map(entry => [
+            entry.timestamp, // Format timestamp
+            entry.humedad,
+            entry.temperatura
+        ]);
 
-        // Update the HTML elements
-        tempSite.textContent = `${temperatura} °C`;
-        humSite.textContent = `${humedad} %`;
-        timeSite.textContent = timestamp;
+        // Combine headers and rows into a CSV string
+        const csvContent = [headers.join(","), ...rows.map(row => row.join(","))].join("\n");
 
-        console.log('Updated sensor data:', data);
-    } else {
-        console.log('No data available for sensor');
-    }
-}, (error) => {
-    console.error('Error listening for sensor updates:', error);
+        // Create a Blob and trigger download
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "historical_data.csv";
+        link.click();
+        URL.revokeObjectURL(url); // Cleanup
+    }).catch(error => {
+        alert("Error fetching historical data for CSV:", error);
+    });
 });
 
 
-
-// Set up listeners for child events in the 'sensorHist' node
-const histRef = ref(db, 'sensorHist/historico');
-
-// Listen for new data added
-onChildAdded(histRef, (snapshot) => {
-    const newEntry = snapshot.val();
-    console.log('New historical entry added:', newEntry);
-
-    // Optionally update your graph or UI
-    updateGraph(); // Call your updateGraph function here
-});
-
-// Listen for data changes
-onChildChanged(histRef, (snapshot) => {
-    const updatedEntry = snapshot.val();
-    console.log('Historical entry updated:', updatedEntry);
-
-    // Update the graph or other UI components
-    updateGraph();
-});
-
-// Listen for data removal
-onChildRemoved(histRef, (snapshot) => {
-    const removedEntry = snapshot.val();
-    console.log('Historical entry removed:', removedEntry);
-
-    // Optionally update the graph/UI
-    updateGraph();
-});
-
+// console.log(hist);
+// console.log(sensor)

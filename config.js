@@ -1,6 +1,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js';
 import {  getDatabase, ref, set, get, child  } from 'https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js';
+import { onValue, onChildAdded, onChildChanged, onChildRemoved } from 'https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js';
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -15,7 +16,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+export const db = getDatabase(app);
 const dbRef = ref(db);
 
 
@@ -68,17 +69,43 @@ export async function readhist() {
     }
 }
 
-export async function readData() {
-    try {
-        const focosData = await readfocos();
-        const sensorData = await readsensor();
-        const sensorHistData = await readhist();
+//REAL-TIME SENSOR-------------------------------------------
+export function listenForValueUpdates(path, callback) {
+    const refPath = ref(db, path);
+    onValue(refPath, (snapshot) => {
+        if (snapshot.exists()) {
+            callback(snapshot.val());
+        } else {
+            console.log(`No data available at path: ${path}`);
+        }
+    }, (error) => {
+        console.error(`Error listening for updates on path ${path}:`, error);
+    });
+}
 
-        console.log("Focos:", focosData);
-        console.log("Sensor:", sensorData);
-        console.log("Sensor History:", sensorHistData);
-    } catch (error) {
-        console.error("Error reading data:", error);
+//REAL-TIME HISTORICO ---------------------------------------------
+export function listenForChildEvents(path, onAdded, onChanged, onRemoved) {
+    const refPath = ref(db, path);
+
+    // Child added listener
+    if (onAdded) {
+        onChildAdded(refPath, (snapshot) => {
+            onAdded(snapshot.val());
+        });
+    }
+
+    // Child changed listener
+    if (onChanged) {
+        onChildChanged(refPath, (snapshot) => {
+            onChanged(snapshot.val());
+        });
+    }
+
+    // Child removed listener
+    if (onRemoved) {
+        onChildRemoved(refPath, (snapshot) => {
+            onRemoved(snapshot.val());
+        });
     }
 }
 
@@ -105,8 +132,21 @@ export async function turnOn(foconum) {
 }
 
 
-
+//READ DATA -------------------------------------------------------
 // readData()
+export async function readData() {
+    try {
+        const focosData = await readfocos();
+        const sensorData = await readsensor();
+        const sensorHistData = await readhist();
+
+        console.log("Focos:", focosData);
+        console.log("Sensor:", sensorData);
+        console.log("Sensor History:", sensorHistData);
+    } catch (error) {
+        console.error("Error reading data:", error);
+    }
+}
 
 
 

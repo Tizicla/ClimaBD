@@ -1,0 +1,95 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+
+    font-family: apercu, sans-serif;
+    
+    background-color: rgb(156, 255, 141);
+}
+.content{
+    display: flex;
+    flex-direction: row;
+}
+
+/* Time Buttons  ------------------------------*/
+#currentDateTime{
+    margin: 0;
+    padding: .3rem;
+    background-color:rgb(246, 255, 68);
+    color: green;
+
+    width:100%;
+    justify-content: center;
+
+    display: flex; 
+    justify-content: center; 
+}
+
+/* Header-------------------- */
+/* Titles */
+header{
+    margin: 0;
+    background-color: green;
+    width: 100%;
+    justify-items: center;
+
+    color:rgb(246, 255, 73);
+}
+
+h1{
+    font-weight: bolder
+}
+
+.title1{
+    font-size: 4.5rem;
+    margin: 0;
+}
+.title2{
+    font-size: 1.5rem;
+    margin-top: 0;
+}
+
+/* Focos ---------------------------------------- */
+.focos {
+    display: flex;
+    flex-direction: row; 
+    justify-content: center; 
+    gap: 1rem; 
+}
+
+.foco {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+
+    font-family: 'Share Tech Mono', sans-serif;
+    font-weight: bold;
+    align-items: center;
+
+    border-radius: 1rem;
+
+    background-color: green;
+    color: rgb(246, 255, 68);
+    width: 100%;
+}
+
+
+
+
+
+
+
+/* Buttons ------------------------------------- */
+
+
+
+.function_buttons{
+    background-color:blue
+}
+
+.func_button{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+

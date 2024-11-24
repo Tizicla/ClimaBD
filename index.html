@@ -7,40 +7,80 @@
     <script type="module" src="config.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script type="module" src="script.js"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apercu-font@1.0.0/stylesheet.min.css">
+    <link href="https://fonts.cdnfonts.com/css/share-tech-mono" rel="stylesheet">
+    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="styles/input.css">
 </head>
 <body>
-    <div>
-        foco1:
-        <input type="checkbox" onpress="" name="foco1" id="foco1input">
-        foco2:
-        <input type="checkbox" name="foco2" id="foco2input">
+    
+    <!-- Titles -->
+    <header>
+        <h1 class="title1">SENSORS</h1>
+        <h1 class="title2">TEMPERATURE & HUMIDITY</h1>
+    </header>
+    
+    <p id="currentDateTime"></p>
+    <br>
+    <div class="content">
+        <div div="focosNSensor">
+            <!-- Focos -->
+            <div class="focos">
+                <div class="foco">
+                    <p>FOCO 1</p>
+
+                    <img src="">
+
+                    <label class="switch">
+                        <input type="checkbox" onpress="" name="foco1" id="foco1input">
+                        <span class="slider round"></span>
+                    </label>
+                    
+                </div>
+
+                <div class="foco">
+                    <p>FOCO 2</p>
+
+                    <label class="switch">
+                        <input type="checkbox" onpress="" name="foco2" id="foco2input">
+                        <span class="slider round"></span>
+                    </label>
+                   
+                </div>
+                
+            </div>
+            <br>
+        
+            <div>
+                temp actual:
+                <span id="tempCurrent"></span>
+                humedad actual:
+                <span id="humCurrent"></span>
+                hora: 
+                <span id="timeCurrent"></span>
+            </div>
+        </div>
+        
+        <br>
+    
+        <div class="graphNButtons">
+            <div>
+                <label for="graphnum">Number of Points:</label>
+                <input type="number" id="graphnum" value="0">
+                <button id="updateButton" >Update Graph</button>
+            </div>
+            <svg width="800" height="400" id="scatterPlot"></svg>
+        
+            <div class="function_buttons">
+                <button class="func_button" id="printButton" onclick="location.href = 'download.html';">imprimir</button>
+                <button class="func_button" id="csvButton">descargar csv</button>
+            </div>
+        </div>
     </div>
 
-    <div>
-        temp actual:
-        <span id="tempCurrent"></span>
-        humedad actual:
-        <span id="humCurrent"></span>
-        hora: 
-        <span id="timeCurrent"></span>
-    </div>
-
-    <div>
-        <label for="graphnum">Number of Points:</label>
-        <input type="number" id="graphnum" value="0">
-        <button id="updateButton" >Update Graph</button>
-    </div>
-    <svg width="800" height="400" id="scatterPlot"></svg>
-
-
-
-    <div>
-        <button id="printButton">imprimir</button>
-        <button id="csvButton">descargar csv</button>
-    </div>
+    
+    
     
 </body>
-
 </html>
-
-<style>
