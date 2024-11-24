@@ -4,11 +4,6 @@ const date = new Date();
 const dateTimeString = date.toLocaleString();  // Formats the date and time to a readable string
 document.getElementById('currentDateTime').textContent = `Time of print: ${dateTimeString}`.toLocaleUpperCase();
 
-window.onload = function () {
-    // window.print();
-};
-
-
 let hist = readhist();
 //D3.JS GRAPH ----------------------------------------------------------------------------
 hist.then(data => {
@@ -167,12 +162,8 @@ hist.then(data => {
 
     // Initial render
     updateGraph();
-}).catch(error => {
-    console.error("Error loading historical data:", error);
-});
 
-hist.then(data => {
-    hist = data.historico;
+    //Display the last n elements inside of datalogs
     const last = hist.slice(-6);
 
     const dataLogsContainer = document.querySelector(".datalogs");
@@ -201,7 +192,15 @@ hist.then(data => {
         // Append the log entry to the container
         dataLogsContainer.appendChild(logEntry);
     });
+
+    window.print();
+    
 }).catch(error => {
     console.error("Error loading historical data:", error);
 });
 
+
+
+window.onafterprint = function () {
+    window.close();
+};
