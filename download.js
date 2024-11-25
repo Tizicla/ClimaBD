@@ -202,7 +202,7 @@ hist.then(data => {
         window.print();
     } else {
         alert("No data available");
-        indow.close();
+        window.close();
     }
 
 }).catch(error => {
