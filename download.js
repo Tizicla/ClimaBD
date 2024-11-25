@@ -201,7 +201,8 @@ hist.then(data => {
     if (isPageReadyToPrint()) {
         window.print();
     } else {
-        console.error("Page is not ready to print.");
+        alert("No data available");
+        indow.close();
     }
 
 }).catch(error => {
