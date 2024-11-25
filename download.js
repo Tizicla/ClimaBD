@@ -1,11 +1,21 @@
-import {db, readData, readsensor, readhist,  readfocos} from './config.js';
+import {db, readData, readsensor, readhist, readfocos} from './config.js';
 
 const date = new Date();
 const dateTimeString = date.toLocaleString();  // Formats the date and time to a readable string
-document.getElementById('currentDateTime').textContent = `Time of print: ${dateTimeString}`.toLocaleUpperCase();
+const dateTimeElement = document.getElementById('currentDateTime');
+dateTimeElement.textContent = `Time of print: ${dateTimeString}`.toLocaleUpperCase();
 
 let hist = readhist();
-//D3.JS GRAPH ----------------------------------------------------------------------------
+
+// Function to check if both date and logs are ready
+const isPageReadyToPrint = () => {
+    const logsContainer = document.querySelector(".datalogs");
+    const logsReady = logsContainer && logsContainer.children.length > 0;
+    const dateReady = dateTimeElement && dateTimeElement.textContent.length > 0;
+    return logsReady && dateReady;
+};
+
+// D3.JS GRAPH ----------------------------------------------------------------------------
 hist.then(data => {
     const hist = data.historico;
     const svg = d3.select("#scatterPlot");
@@ -40,12 +50,10 @@ hist.then(data => {
 
         // These two scales can be changed
         const humedadScale = d3.scaleLinear()
-            // .domain([20, d3.max(graphData, d => d.humedad)])
             .domain([10, 70])
             .range([innerHeight, 0]);
 
         const temperaturaScale = d3.scaleLinear()
-            // .domain([20, d3.max(graphData, d => d.temperatura)])
             .domain([10, 70])
             .range([innerHeight, 0]);
 
@@ -144,7 +152,6 @@ hist.then(data => {
 
     const updateGraph = () => {
         const graphnum = localStorage.getItem('graphnum');
-        
 
         // Filter valid data points
         const filteredHist = hist.filter(d => d && d.timestamp && d.humedad != null && d.temperatura != null);
@@ -163,7 +170,7 @@ hist.then(data => {
     // Initial render
     updateGraph();
 
-    //Display the last n elements inside of datalogs
+    // Display the last n elements inside of datalogs
     const last = hist.slice(-6);
 
     const dataLogsContainer = document.querySelector(".datalogs");
@@ -177,29 +184,29 @@ hist.then(data => {
         const details = document.createElement("h4");
         details.textContent = `Temperatura: ${entry.temperatura}.C   Humedad: ${entry.humedad}%`;
 
-
         // Format the timestamp
         const timestamp = document.createElement("p");
         timestamp.style.fontStyle = "italic"; // Apply italics
         timestamp.textContent = `Timestamp: ${new Date(entry.timestamp).toLocaleString()}`;
 
-    
         // Append both elements to the log entry
         logEntry.appendChild(details);
         logEntry.appendChild(timestamp);
-        
 
         // Append the log entry to the container
         dataLogsContainer.appendChild(logEntry);
     });
 
-    window.print();
+    // Print the page only if all required data is loaded
+    if (isPageReadyToPrint()) {
+        window.print();
+    } else {
+        console.error("Page is not ready to print.");
+    }
 
 }).catch(error => {
     console.error("Error loading historical data:", error);
 });
-
-
 
 window.onafterprint = function () {
     window.close();

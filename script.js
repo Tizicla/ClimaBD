@@ -29,8 +29,6 @@ function updateDateTime() {
 
 // Call the function to update the time immediately when the page loads
 updateDateTime();
-
-// Optional: Update the time every second (if you want real-time updates)
 setInterval(updateDateTime, 1000);
 
 
@@ -234,6 +232,7 @@ hist.then(data => {
 
     const updateGraph = () => {
         const graphnum = +document.getElementById("graphnum").value;
+        // Set local item for printing
         localStorage.setItem('graphnum', graphnum);
 
         // Filter valid data points
