@@ -194,7 +194,7 @@ hist.then(data => {
     });
 
     window.print();
-    
+
 }).catch(error => {
     console.error("Error loading historical data:", error);
 });
